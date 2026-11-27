@@ -1,0 +1,49 @@
+# nginx 站点模板：chat.peilika.beer（B 正式站，线上真在用的那个 origin）
+#
+# ⚠️ 覆盖这个目录 = 直接换掉所有用户看到的前端。上线前必须：
+#   1) backup_web.sh 跑过（/opt/bakerai-backup/<ts>_web/web-chat 存在）
+#   2) 迁移 banner / 账号页在 A 站（test2）验收过
+#   3) deploy_web.sh --host prod --dist <构建产物>  （它会自带 sha 核对 + 失败回滚）
+#
+# 与 test2 的差别只有三处：server_name、root、以及保留原有的 /api/legacy-key 反代。
+server {
+    listen 80;
+    server_name chat.peilika.beer;
+
+    root /var/www/peilika-chat;
+    index index.html;
+
+    client_max_body_size 64m;
+
+    # 老客户端要的"内置 key"接口（原本就有，别删；新后端不需要它）
+    location = /api/legacy-key {
+        proxy_pass http://127.0.0.1:8210/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header Connection '';
+        proxy_buffering off;
+        proxy_cache off;
+    }
+
+    include /etc/nginx/snippets/bakerai-new-api.conf;
+    include /etc/nginx/snippets/bakerai-web-extra.conf;
+
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header Pragma "no-cache" always;
+        expires -1;
+    }
+    location ~* \.html$ {
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    location /assets/ {
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable";
+        add_header Access-Control-Allow-Origin * always;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

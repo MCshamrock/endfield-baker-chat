@@ -1,0 +1,10 @@
+{
+  "name": "baker-ai-4",
+  "productName": "Baker AI 4",
+  "version": "4.0.5",
+  "description": "终末地烘焙聊天 · Baker AI 4 桌面客户端",
+  "main": "main.cjs",
+  "private": true,
+  "author": "Baker AI",
+  "license": "SEE LICENSE IN LICENSE"
+}

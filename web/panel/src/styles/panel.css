@@ -1,0 +1,858 @@
+/* ==========================================================================
+   panel.css —— BakerAI 后台面板自己的那层样式。
+
+   分工（很重要，不然两边会打架）：
+     · src/assets/endfield/endfield.css  管"长什么样"：颜色、字体、切角、按钮、看板、表格
+     · 这个文件                          只管"摆在哪" + 后台特有的零件：
+                                        页面骨架、工具条、行内小控件、登录页、思考链
+   所以这里**不写颜色值**（除个别必须自绘的），全部用 --ef-* 变量；
+   两套主题（亮/暗）由 <html data-theme> 切，这里一行都不用改。
+   ========================================================================== */
+
+/* ---------- 0. 字体：宽体拉丁 + 中文黑体 ----------
+   Saira 是可变的：宽度轴 50–125、字重 100–900。后台靠它做出"宽、几何、
+   全大写"的拉丁标签和等宽数字。中文用系统黑体（Windows 雅黑 / macOS 苹方），
+   不额外背一个几 MB 的中文字体包 —— 这个站是内部工具，省流量比省一次安装重要。 */
+@font-face {
+  font-family: 'Saira Variable';
+  src: url('../assets/fonts/Saira.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-stretch: 50% 125%;
+  font-display: swap;
+}
+
+:root {
+  --ef-font-ui: 'Saira Variable', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC',
+    'Source Han Sans SC', sans-serif;
+  --ef-font-text: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC',
+    sans-serif;
+  /* 后台右边缘留出滚动条的位置，免得表格宽度在"有/无滚动条"之间抖 */
+  --pn-gutter: 0px;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+}
+
+/* ---------- 1. 骨架：命令栏 + 主体 ---------- */
+
+.pn-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* 命令栏吸顶：表格滚很长时导航还在，省一次回到顶部 */
+.pn-shell > .ef-cmdbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid #2b2b2b;
+}
+
+.pn-cmd-brand em {
+  font-style: normal;
+  color: #8b8b8b;
+  font-size: 0.7rem;
+  font-stretch: var(--ef-wider);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin-left: 0.35rem;
+}
+
+.pn-cmd-util {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.4rem;
+}
+
+.pn-cmd-util .who {
+  display: grid;
+  justify-items: end;
+  line-height: 1.2;
+  padding-right: 0.3rem;
+}
+
+.pn-cmd-util .who b {
+  font-size: 0.85rem;
+  color: #ededed;
+}
+
+.pn-cmd-util .who small {
+  font-size: 0.6rem;
+  font-stretch: var(--ef-wider);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b8b8b;
+}
+
+/* 命令栏里的按钮是深色底上的：用描边款，别用套件的浅灰底 */
+.ef-cmdbar .ef-btn {
+  --fill: #232323;
+  color: #ededed;
+}
+
+/* 状态条：一行真实字段（服务时间、时区、规模），像设备面板上的读数行 */
+.pn-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1.1rem;
+  padding: 0.45rem var(--ef-pad);
+  border-bottom: 1px solid var(--ef-rule);
+  background: var(--ef-panel);
+  color: var(--ef-ink-2);
+  font-size: 0.75rem;
+  font-stretch: var(--ef-wide);
+  letter-spacing: 0.02em;
+}
+
+.pn-status b {
+  color: var(--ef-ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-status .sep {
+  color: var(--ef-rule);
+}
+
+.pn-status .live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pn-status .live::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--ef-signal);
+}
+
+.pn-main {
+  flex: 1;
+  width: 100%;
+  padding: 1.6rem var(--ef-pad) 3rem;
+}
+
+.pn-page {
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+}
+
+/* ---------- 2. 页头 ---------- */
+
+.pn-page > .ef-head {
+  margin-bottom: 1.1rem;
+}
+
+.pn-head-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+}
+
+.pn-head-tools .grow {
+  flex: 1 1 12rem;
+}
+
+/* ---------- 3. 看板与栅格 ---------- */
+
+.pn-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.pn-grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pn-grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* 上面一排"规模 / 密钥池"，下面一窄一宽：直方图 + 今日读数 */
+.pn-grid.overview-top {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+}
+
+.pn-grid.overview-bottom {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+
+.pn-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.pn-panel > h2,
+.pn-panel > .pn-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.05rem;
+  /* 800：小字号 + 深色底上 700 会显得发灰，粗一档才像"板子上的标题" */
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.pn-panel-head .sub {
+  color: var(--ef-ink-2);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* 看板里的数字组：覆盖 .ef-figs 的三列，改成按内容自动分列。
+   5.2rem 的下限是量出来的：密钥池那 4 个数字在 1024 宽也要排成一行。 */
+.pn-figs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(4.6rem, 1fr));
+  gap: 0.9rem 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--ef-rule);
+}
+
+.pn-figs > a,
+.pn-figs > div {
+  display: grid;
+  gap: 0.1rem;
+  align-content: start;
+  justify-items: start;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pn-figs b {
+  font-size: 2.1rem;
+  font-stretch: var(--ef-wide);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-figs .unit {
+  font-size: 0.85rem;
+  font-stretch: var(--ef-wider);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ef-ink-2);
+  margin-left: 0.15rem;
+}
+
+.pn-figs span.label {
+  font-size: 0.78rem;
+  color: var(--ef-ink-2);
+}
+
+/* 需要看一眼的数字：黄块垫底（不是红 —— 红只留给删除） */
+.pn-figs .is-alert b {
+  background: var(--ef-signal);
+  color: var(--ef-on-signal);
+  padding: 0 0.25em;
+}
+
+.pn-ledger {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pn-ledger li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.42rem 0;
+  border-bottom: 1px solid var(--ef-rule);
+}
+
+.pn-ledger li:last-child {
+  border-bottom: 0;
+}
+
+.pn-ledger span {
+  color: var(--ef-ink-2);
+  font-size: 0.85rem;
+}
+
+.pn-ledger b {
+  font-stretch: var(--ef-wide);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pn-ledger b.warn {
+  background: var(--ef-signal);
+  color: var(--ef-on-signal);
+  padding: 0 0.25em;
+}
+
+/* ---------- 4. 直方图 ---------- */
+
+.pn-chart {
+  display: grid;
+  gap: 0.6rem;
+}
+
+/* 套件的 .ef-bars 已经给了柱状图和底部基线，这里只补三件事：
+   柱子别宽到像色块、零值也留一小截（能看出"这天有格子、只是没量"）、悬停给读数 */
+.pn-chart .ef-bars {
+  height: 9rem;
+  gap: 10px;
+}
+
+.pn-chart .ef-bars > li {
+  min-height: 4px;
+  /* 7 天时一格有 120px 宽，全填满像色块；限宽之后才像柱状图 */
+  max-width: 3.4rem;
+  width: 100%;
+  justify-self: center;
+  background: color-mix(in srgb, var(--ef-ink-2) 38%, transparent);
+}
+
+.pn-chart .ef-bars > li.is-zero {
+  background: var(--ef-rule);
+}
+
+.pn-chart .ef-bars > li.is-here {
+  background: var(--ef-signal);
+}
+
+.pn-chart .ef-bars > li > span {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 30 / 90 天时标签挤不下，只留两头和间隔 */
+.pn-chart.is-dense .ef-bars > li:not(:nth-child(5n + 1)):not(:last-child) > span {
+  opacity: 0;
+}
+
+.pn-chart-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  color: var(--ef-ink-2);
+  font-size: 0.75rem;
+  font-stretch: var(--ef-wide);
+}
+
+.pn-chart-foot b {
+  color: var(--ef-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 5. 表格 ---------- */
+
+.pn-table-wrap {
+  overflow-x: auto;
+  /* 横向滚动时表头别跟着飞 */
+  max-width: 100%;
+}
+
+.pn-table {
+  min-width: 46rem;
+}
+
+.pn-table th {
+  position: sticky;
+  top: 0;
+  background: var(--ef-panel);
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.pn-table td {
+  vertical-align: middle;
+}
+
+.pn-table td.narrow,
+.pn-table th.narrow {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.pn-table .mono {
+  font-family: var(--ef-font-mono);
+  font-size: 0.8rem;
+  color: var(--ef-ink-2);
+}
+
+.pn-table tr.is-off td {
+  color: var(--ef-ink-2);
+}
+
+.pn-table tr.is-off td:first-child {
+  box-shadow: inset 3px 0 0 var(--ef-rule);
+}
+
+/* ---------- 6. 行内控件 ---------- */
+
+.pn-input,
+.pn-select,
+.pn-textarea {
+  width: 100%;
+  padding: 0.38rem 0.5rem;
+  border: 1px solid var(--ef-rule);
+  background: var(--ef-panel);
+  color: var(--ef-ink);
+  font-family: var(--ef-font-ui);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  border-radius: 0;
+}
+
+.pn-input:hover,
+.pn-select:hover,
+.pn-textarea:hover {
+  border-color: var(--ef-ink-2);
+}
+
+.pn-input:focus-visible,
+.pn-select:focus-visible,
+.pn-textarea:focus-visible {
+  outline: 2px solid var(--ef-trace);
+  outline-offset: 1px;
+  border-color: var(--ef-ink);
+}
+
+/* 行内控件不要撑满整格：搜索框那种才撑 */
+.pn-input.inline,
+.pn-select.inline {
+  width: auto;
+  min-width: 5.5rem;
+}
+
+/* 表格里的输入框按内容定宽：不然"显示名"那种列会变成一排巨大空盒子 */
+.pn-table .pn-input {
+  max-width: 16rem;
+}
+
+.pn-input.tiny {
+  width: 4.2rem;
+  max-width: 4.2rem;
+  text-align: right;
+}
+
+/* 锁住的行内控件（不能改自己的角色/状态）：必须看得出来是灰的，
+   否则人会一直去点一个点不动的东西，还以为界面坏了 */
+.pn-input:disabled,
+.pn-select:disabled,
+.pn-textarea:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--ef-chip);
+  border-color: var(--ef-rule);
+}
+
+.pn-textarea {
+  min-height: 12rem;
+  padding: 0.55rem 0.7rem;
+  font-family: var(--ef-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.75;
+  resize: vertical;
+}
+
+.pn-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.pn-field > span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ef-ink-2);
+}
+
+.pn-field > small {
+  font-size: 0.72rem;
+  color: var(--ef-ink-2);
+}
+
+.pn-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.pn-toolbar .grow {
+  flex: 1 1 14rem;
+  max-width: 26rem;
+}
+
+.pn-toolbar .push {
+  margin-left: auto;
+}
+
+.pn-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  color: var(--ef-ink-2);
+  font-size: 0.8rem;
+  font-stretch: var(--ef-wide);
+}
+
+.pn-pager b {
+  color: var(--ef-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 7. 状态：加载 / 空 / 失败 ---------- */
+
+.pn-state {
+  display: grid;
+  gap: 0.6rem;
+  padding: 2rem 0;
+  color: var(--ef-ink-2);
+}
+
+/* 空状态：细线框 + 斜线纹底，中间一句完整的话 */
+.pn-empty {
+  padding: 2rem 1.2rem;
+  border: 1px solid var(--ef-rule);
+  background:
+    var(--ef-hatch) 0 0 / 9px 9px,
+    var(--ef-panel);
+  background-blend-mode: normal;
+  color: var(--ef-ink-2);
+  line-height: 1.8;
+}
+
+.pn-empty b {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--ef-ink);
+}
+
+/* 加载：骨架块，不闪 */
+.pn-skeleton {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+}
+
+.pn-skeleton i {
+  display: block;
+  height: 0.9rem;
+  background: var(--ef-chip);
+}
+
+.pn-skeleton i:nth-child(2n) {
+  width: 72%;
+}
+
+.pn-skeleton i:nth-child(3n) {
+  width: 88%;
+}
+
+/* ---------- 8. 登录页 ---------- */
+
+.pn-login {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+
+.pn-login-card {
+  width: min(26rem, 100%);
+  padding: 1.6rem 1.5rem 1.5rem;
+  background: var(--ef-panel);
+  border: 1px solid var(--ef-rule);
+  /* 右下切角：这块不是可点的东西，但它是"入口" —— 用一个切角把它和正文区分开 */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.6rem), calc(100% - 1.6rem) 100%, 0 100%);
+}
+
+.pn-login-card .ef-tri {
+  margin-bottom: 1.1rem;
+}
+
+/* 套件的 .ef-form 是竖排列的，这里压紧一点 */
+.pn-login-card .ef-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.pn-login-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--ef-rule);
+  color: var(--ef-ink-2);
+  font-size: 0.72rem;
+  font-stretch: var(--ef-wide);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- 9. 配置页 ---------- */
+
+.pn-config-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.pn-config-row {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.9rem 0 1rem;
+  border-bottom: 1px solid var(--ef-rule);
+}
+
+.pn-config-row:last-child {
+  border-bottom: 0;
+}
+
+.pn-config-row header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+}
+
+.pn-config-row header b {
+  font-size: 0.95rem;
+  font-family: var(--ef-font-mono);
+  font-weight: 600;
+}
+
+.pn-config-row header .meta {
+  color: var(--ef-ink-2);
+  font-size: 0.72rem;
+  font-stretch: var(--ef-wide);
+}
+
+.pn-config-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pn-config-acts .hint {
+  color: var(--ef-ink-2);
+  font-size: 0.75rem;
+}
+
+.pn-config-acts .saved {
+  color: var(--ef-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--ef-signal);
+  color: var(--ef-on-signal);
+  padding: 0 0.4em;
+}
+
+/* ---------- 10. 思考链 ---------- */
+
+.pn-reason-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.pn-reason {
+  border: 1px solid var(--ef-rule);
+  background: var(--ef-panel);
+}
+
+.pn-reason > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pn-reason > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pn-reason > summary::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--ef-ink);
+  transform: translateY(-0.05rem) rotate(45deg);
+  transition: transform 0.18s var(--ef-mech);
+}
+
+.pn-reason[open] > summary::before {
+  transform: translateY(-0.05rem) rotate(135deg);
+}
+
+.pn-reason > summary:focus-visible {
+  outline: 2px solid var(--ef-trace);
+  outline-offset: -2px;
+}
+
+.pn-reason .seq {
+  font-stretch: var(--ef-wide);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-reason .meta {
+  margin-left: auto;
+  color: var(--ef-ink-2);
+  font-size: 0.75rem;
+  font-stretch: var(--ef-wide);
+}
+
+.pn-reason .body {
+  padding: 0 0.8rem 0.9rem;
+}
+
+.pn-reason pre {
+  margin: 0.5rem 0 0;
+  padding: 0.7rem 0.8rem;
+  background: var(--ef-chip);
+  color: var(--ef-ink);
+  font-family: var(--ef-font-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 32rem;
+  overflow: auto;
+}
+
+.pn-reason .reply {
+  margin: 0.5rem 0 0;
+  color: var(--ef-ink-2);
+  line-height: 1.7;
+  font-size: 0.85rem;
+}
+
+.pn-reason .cap {
+  margin: 0.7rem 0 0;
+  color: var(--ef-ink-2);
+  font-size: 0.7rem;
+  font-stretch: var(--ef-wider);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- 11. 杂项 ---------- */
+
+.pn-note {
+  margin: 0;
+  color: var(--ef-ink-2);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.pn-note code {
+  font-family: var(--ef-font-mono);
+  font-size: 0.78rem;
+}
+
+.pn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pn-mt {
+  margin-top: 1rem;
+}
+
+.pn-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* 分段选择（7/30/90 天）用套件的 .ef-seg，这里只保证它不撑满整行 */
+.pn-seg {
+  display: inline-flex;
+}
+
+.pn-seg .ef-seg {
+  width: auto;
+}
+
+/* ---------- 12. 响应式 ----------
+   桌面 ≥1280 是主场景；1024 以下把两栏改一栏，表格横向滚（不挤成一条）。
+   手机不是目标（后台在手机上改配置太危险），但至少能看能点。 */
+@media (max-width: 1279px) {
+  .pn-grid.overview-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 1024 宽时命令栏一行装不下 7 个分区 + 身份：压窄分区、藏掉账号那两行，
+     让"浅色/退出"留在同一行（折下去会顶掉内容的第一屏） */
+  .pn-shell .ef-cmdbar nav a {
+    padding-inline: 0.62rem 0.5rem;
+  }
+
+  .pn-cmd-util .who {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .pn-grid.cols-2,
+  .pn-grid.cols-3,
+  .pn-grid.overview-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pn-main {
+    padding-block: 1.1rem 2rem;
+  }
+
+  /* 命令栏小屏折行后别占满屏 */
+  .pn-shell > .ef-cmdbar {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .pn-cmd-util .who {
+    display: none;
+  }
+
+  .pn-figs b {
+    font-size: 1.7rem;
+  }
+
+  .pn-toolbar .grow {
+    max-width: none;
+  }
+}
+
+/* 减少动态效果：套件已经处理了它自己那些类，这里补我们的 */
+@media (prefers-reduced-motion: reduce) {
+  .pn-reason .body,
+  .pn-chart .ef-bars > li {
+    transition: none;
+  }
+}

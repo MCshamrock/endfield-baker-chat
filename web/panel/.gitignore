@@ -1,0 +1,19 @@
+# 依赖与构建产物
+node_modules/
+dist/
+dist-smoke/
+
+# 本地环境
+.env
+.env.local
+*.local
+
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# 冒烟脚本的临时输出
+scripts/.smoke-tmp/
+docs/screenshots/*.tmp.png

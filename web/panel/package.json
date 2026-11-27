@@ -1,0 +1,26 @@
+{
+  "name": "baker-panel",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "BakerAI 后台面板（panel.peilika.beer）—— 只做数据的读写界面，业务全在 web/back",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "smoke": "node scripts/panel-smoke.mjs",
+    "check:live": "node scripts/panel-live-check.mjs",
+    "check:ui": "node scripts/panel-ui-check.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.17"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.0",
+    "vue-tsc": "^3.0.5"
+  }
+}

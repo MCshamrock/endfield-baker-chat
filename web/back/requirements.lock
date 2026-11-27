@@ -1,0 +1,61 @@
+# 依赖锁定 —— 本机与服务器必须完全一致
+#
+# 来源：服务器影子服务 venv 的 `pip freeze`（2026-11-15 18:57，Python 3.14.4）
+# 用法：scripts/setup_venv.ps1 会装这个文件，不用手动 pip install
+#
+# 为什么要有这个文件：
+#   pyproject.toml 里写的是范围（fastapi>=0.115,<1），只能保证"装得上"，不能保证"两边一样"。
+#   范围里的任何一次上游发版都会让本机和服务器悄悄分叉 —— 那种 bug 最难查：
+#   本地好好的，服务器报一个谁都没见过的错。
+#   所以：**范围在 pyproject，具体版本在锁文件**；改依赖要同时改两处。
+#
+# 怎么更新（在服务器上装完先验证，再回来改这一份）：
+#   /home/y/baker-v4/venv/bin/pip freeze | sort > /tmp/freeze.txt
+#   —— 去掉 `-e ...` 那行，把结果贴回这里
+#
+# 已知差异：本机 Python 是 3.14.5，服务器是 3.14.4（同一 minor，只差一个 patch）。
+
+# ---- 运行时（服务器上有，必须一致）----
+annotated-doc==0.0.6
+annotated-types==0.8.0
+anyio==4.16.0
+certifi==2026.10.23
+cffi==2.1.1
+click==8.5.1
+cryptography==50.0.2
+fastapi==0.163.1
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+opentelemetry-api==1.45.2
+pydantic==2.14.3
+pydantic-settings==2.16.3
+pydantic_core==2.50.4
+pycparser==3.12
+PyMySQL==1.2.4
+python-dotenv==1.2.4
+SQLAlchemy==2.1.8
+starlette==1.10.0
+typing-inspection==0.4.5
+typing_extensions==4.16.0
+uvicorn==0.54.0
+
+# ---- 测试（服务器上也装了，用于在那边跑同一套测试）----
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+# Windows 专有：pytest 在 Windows 上会拖一个 colorama。服务器是 Linux，没有这行属正常差异。
+colorama==0.4.6
+
+# ---- 仅本地开发用（服务器上没有，不参与运行）----
+mypy==1.20.2
+mypy_extensions==1.2.0
+pathspec==1.1.1
+librt==0.16.0
+ruff==0.17.5
+
+# multipart/form-data 解析（FastAPI 的 UploadFile 依赖它）
+python-multipart==0.0.33

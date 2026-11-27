@@ -1,0 +1,52 @@
+[Unit]
+# baker-api.service —— 新后端（FastAPI/uvicorn）的唯一运行单元
+#
+# 装在哪： ~y/.config/systemd/user/baker-api.service   （用户单元，不是系统单元）
+# 为什么用用户单元：代码、venv、日志、上传目录全在 /home/y/baker-v4 下，
+#   用系统单元要么加 User=y（还得处理 HOME/sudo 环境），要么文件属主被 root 弄乱。
+#   用户单元天然就是 y，`systemctl --user` 也不需要 sudo。
+#
+# 装法：deploy_backend.sh 会渲染这个模板并 enable --now。
+# 手动：
+#   cp baker-api.service /home/y/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now baker-api
+Description=BakerAI backend (baker-api, 127.0.0.1:5660)
+Documentation=file:/home/y/baker-v4/back/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 代码目录：迁移脚本、schema/、.env 都相对这里
+WorkingDirectory=/home/y/baker-v4/back
+# 配置：**所有**运行时配置都在 .env（数据库/上游/密钥/上传目录）。
+# 前置 - ：文件不在时不要因此拒绝启动（下面会有明确的报错，比 systemd 的
+# "Failed to load environment files" 好查）。
+EnvironmentFile=-/home/y/baker-v4/back/.env
+# 用 venv 里的 uvicorn（不是系统的），否则依赖版本对不上
+ExecStart=/home/y/baker-v4/venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 --port 5660 \
+    --log-level info \
+    --no-server-header \
+    --timeout-keep-alive 65
+# 单进程：并发靠 asyncio；**不要**加 --workers，群聊会话与限流都在进程内存里
+Restart=always
+RestartSec=3
+# 优雅退出：SSE 连接要收尾，别用 -9
+KillSignal=SIGTERM
+TimeoutStopSec=20
+# 日志：append 由 journald 之外的文件承接（logrotate 已配 /etc/logrotate.d/baker-api）
+StandardOutput=append:/home/y/baker-v4/logs/baker-api.log
+StandardError=append:/home/y/baker-v4/logs/baker-api.err.log
+# 加固：**用户单元里不要开 PrivateDevices / 降权那类选项**。
+# 2026-11-18 01:12 实测：`PrivateDevices=true` 让 systemd 在用户管理器下
+# 执行 "Failed to drop capabilities: Operation not permitted" → status=218/CAPABILITIES
+# → 起不来且 Restart=always 无限重试。现网能跑的 baker-v4.service 也没有这些行。
+# 需要加固就用系统单元 + User=y，或者在 nginx/网络层收口，别在用户单元上试。
+ProtectSystem=false
+ProtectHome=false
+# 上传/导入的临时文件必须落在项目里（.env 的 BAKER_TMP_DIR 指到 /home/y/baker-v4/_runtime/tmp）
+# 所以这里不能开 ProtectHome，也不能把 /tmp 变成私有 tmpfs。
+
+[Install]
+WantedBy=default.target

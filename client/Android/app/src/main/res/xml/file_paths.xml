@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="my_images" path="." />
+    <!-- 导出的文件可能落在 getExternalFilesDir(DIRECTORY_DOWNLOADS)/Baker AI，
+         这条必须留着，否则 Android 7+ 把文件交给文件管理器/图库时会抛 FileUriExposedException -->
+    <external-files-path name="ext_files" path="." />
+    <cache-path name="my_cache_images" path="." />
+    <files-path name="internal_files" path="." />
+</paths>

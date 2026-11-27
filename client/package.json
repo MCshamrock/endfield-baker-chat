@@ -1,0 +1,53 @@
+{
+  "name": "baker-ai-4",
+  "private": true,
+  "version": "4.0.5",
+  "type": "module",
+  "main": "Windows/app/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:fast": "vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "cap:copy": "cap copy android",
+    "cap:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/filesystem": "^8.1.2",
+    "cannon-es": "^0.20.0",
+    "html-to-image": "^1.11.13",
+    "jszip": "^3.10.1",
+    "pinia": "^3.0.3",
+    "three": "^0.160.1",
+    "vue": "^3.5.17"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
+    "sass": "^1.89.2",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.0",
+    "vue-tsc": "^3.0.5"
+  },
+  "build": {
+    "appId": "com.peilika.bakerai",
+    "productName": "Baker AI 4",
+    "directories": {
+      "output": "Releases/win-unpacked"
+    },
+    "files": [
+      "dist/**",
+      "Windows/app/**"
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ]
+    }
+  }
+}

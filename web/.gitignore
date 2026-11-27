@@ -1,0 +1,43 @@
+# BakerAI 源码仓库（web/front + web/back）
+#
+# 目的：让"改了什么都看得到"。源码进 git，构建产物与依赖不进 ——
+# 服务器上这份 repo 是**给人看代码用的**，不是部署来源。
+
+# ---- 依赖 / 虚拟环境 ----
+node_modules/
+.venv/
+.venv-linux/
+
+# ---- 构建产物 ----
+dist/
+dist-ssr/
+release/
+*.local
+
+# ---- Python 运行时产物 ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ---- 本地数据 / 日志 / 备份 ----
+logs/
+*.log
+backup/
+_src_backups/
+*.bak_*
+*.bak_before_*
+*.tmpdir/
+.tmp/
+mock/
+
+# ---- 环境变量（只提交 .env.example） ----
+.env
+.env.*
+!.env.example
+
+# ---- 本机工具 ----
+.dsh-vision-router/
+cloudflared-linux-amd64

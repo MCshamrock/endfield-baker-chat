@@ -1,0 +1,43 @@
+<!doctype html>
+<html
+  lang="zh-CN"
+  data-ef-accent="yellow"
+  data-ef-paper="neutral"
+  data-ef-cut="standard"
+  data-ef-ground="contours"
+  data-ef-density="compact"
+  data-ef-motion="calm"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BakerAI 后台｜panel.peilika.beer</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#191919" />
+    <!-- 内联 favicon：一块黄方块。省掉一次 /favicon.ico 的 404（后台页面不该有噪音请求） -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23191919'/%3E%3Crect x='3' y='3' width='10' height='10' fill='%23FFFA00'/%3E%3C/svg%3E"
+    />
+    <!--
+      变体卡（只有这一处设置，改外观改这里）：
+        强调色 黄 #FFFA00 · 纸色 中性 · 切角 standard · 底纹 等高线
+        密度 compact（后台一屏要装下更多行）· 动效 calm（整天盯着的工具，不要入场动画）
+      默认深色：后台在暗环境看的时间长，浅色由右上角开关切（记在 localStorage）。
+    -->
+    <script>
+      // 在解析 <body> 之前把主题写死，避免"先白闪一下再变暗"。
+      // 内联是因为它必须同步执行；内容固定，不拼任何外部输入。
+      try {
+        var saved = localStorage.getItem('baker.panel.theme')
+        document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
+  </head>
+  <body class="ef ef-contours">
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

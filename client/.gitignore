@@ -1,0 +1,39 @@
+# Node Modules
+node_modules/
+dist/
+
+#备份
+backup/
+
+# 本地模拟后端 LLM 
+mock/
+
+#dsh-vision-router
+.dsh-vision-router/
+
+# ---- 仓库瘦身(2026-10-04 审计)：这些目录/文件要么是构建产物、要么是本地巨物 ----
+release/
+_src_backups/
+hbuilderx/assets/
+cloudflared-linux-amd64
+*.bak_*
+*.bak_before_*
+*.tmpdir/
+# 保留原有的 node_modules/ dist/ backup/ mock/ 等条目
+
+# ---- Baker AI 4 客户端 ----
+build-web.log
+Windows/installer/build-win.log
+Android/build-gradle*.log
+Windows/installer/out/*.exe
+Windows/installer/out/*.7z
+Windows/installer/out/installer-shot.png
+Windows/installer/payload/
+Android/.gradle/
+Android/build/
+Android/app/build/
+Android/local.properties
+Android/keys/
+Releases/*.exe
+Releases/*.apk
+_smoke/

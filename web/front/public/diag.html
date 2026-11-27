@@ -1,0 +1,48 @@
+<!doctype html><html lang="zh"><meta charset="utf-8">
+<title>BakerAI 本地数据诊断（只读）</title>
+<style>body{font:14px/1.5 monospace;background:#111;color:#ddd;padding:16px}pre{white-space:pre-wrap;word-break:break-all}h2{color:#6be39a}</style>
+<h2>只读诊断：不会修改/删除任何数据</h2>
+<pre id="out">读取中…</pre>
+<script>
+const out=[];
+function log(s){out.push(s);document.getElementById('out').textContent=out.join('\n')}
+function openDb(name){return new Promise((res,rej)=>{const r=indexedDB.open(name);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function txStore(db,store,mode){return db.transaction(store,mode).objectStore(store)}
+function req(r){return new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+(async()=>{
+  log('origin: '+location.origin);
+  log('--- localStorage ---');
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);const v=localStorage.getItem(k)||'';log(`${k}  len=${v.length}  ${v.slice(0,60)}`)}
+  log('');
+  log('--- indexedDB databases ---');
+  let dbs=[];
+  try{ dbs = await indexedDB.databases(); }catch(e){ log('indexedDB.databases() 不可用: '+e); }
+  for(const d of dbs){
+    log(`DB: ${d.name}  version=${d.version}`);
+    try{
+      const db = await openDb(d.name);
+      for(const st of Array.from(db.objectStoreNames)){
+        try{
+          const keys = await req(txStore(db,st,'readonly').getAllKeys());
+          log(`  store ${st}: ${keys.length} keys -> ${keys.slice(0,12).map(String).join(', ')}${keys.length>12?' …':''}`);
+          for(const k of keys){
+            try{
+              const v = await req(txStore(db,st,'readonly').get(k));
+              let n=0, shape=typeof v;
+              if(Array.isArray(v)){n=v.length;shape='array'}
+              else if(v&&typeof v==='object'){n=Object.keys(v).length;shape='object{'+Object.keys(v).slice(0,6).join(',')+'}'}
+              else if(typeof v==='string'){n=v.length;shape='string'}
+              const s=JSON.stringify(v);
+              log(`    ${String(k)}: ${shape} len=${n} json=${s?s.length:0}`);
+            }catch(e){log(`    ${String(k)}: <读取失败 ${e}>`)}
+          }
+        }catch(e){log(`  store ${st}: <打不开 ${e}>`)}
+      }
+      db.close();
+    }catch(e){log('  打开失败: '+e)}
+  }
+  log('');
+  log('--- navigator.storage.estimate ---');
+  try{ const est=await navigator.storage.estimate(); log(JSON.stringify(est)) }catch(e){log(String(e))}
+})();
+</script></html>

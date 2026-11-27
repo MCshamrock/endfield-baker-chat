@@ -1,0 +1,83 @@
+[project]
+name = "baker-backend"
+version = "0.1.0"
+description = "BakerAI 新后端（C/S：服务器持有状态）"
+# 与服务器一致：目标服务器（Ubuntu 26.04）只有 Python 3.14，本机也只用 3.14 开发，
+# 避免"本地能跑、服务器装不上"这类只在部署时才暴露的差异。
+requires-python = ">=3.14,<3.15"
+# 依赖版本以 requirements.lock 为准（由服务器 venv 的 pip freeze 生成）。
+# 下面这些范围只用于表达"哪些包要装、大致什么档次"，实际安装请走锁文件。
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+    "sqlalchemy>=2.0.30,<3",
+    "pymysql>=1.1,<2",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.3,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9,<10",
+    "httpx>=0.27,<1",
+    "ruff>=0.6,<1",
+    "mypy>=1.11,<2",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app", "app.api", "app.imports", "app.repos"]
+
+# ---------------------------------------------------------------- 代码检查
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# 说明：这些规则不是"洁癖"，每一条都对应一次真实踩坑或一次读到吐血的经历
+lint.select = [
+    "E",    # 基本语法错
+    "F",    # 未使用的变量/导入（最容易堆积的垃圾）
+    "W",    # 空白问题
+    "I",    # import 顺序（固定下来，diff 才干净）
+    "N",    # 命名规范（全小写、完整单词）
+    "B",    # 常见陷阱（可变默认值、循环里闭包等）
+    "BLE",  # 禁止裸 except
+    "SIM",  # 可以更直白的写法
+    "C4",   # 推导式/生成器该用就用
+    "C901", # 函数太复杂 —— 硬阈值见下
+    "UP",   # 用现代语法
+]
+lint.ignore = [
+    "E501",  # 行宽交给 formatter，不当作错误
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 8
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # 测试里 assert 是正常的（这条其实用不上，留着备忘）
+
+# ---------------------------------------------------------------- 类型检查
+# 用 mypy 而不是 pyright：pyright 会去下载 node，而 node 的缓存默认落在用户目录，
+# 违反"所有文件都在 BakerAI_new 里"的规矩。mypy 是纯 Python，缓存写在 .mypy_cache。
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true     # 每个函数都要标类型
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+ignore_missing_imports = true
+files = ["app", "tests", "scripts"]
+
+# pymysql 自己没有类型标注（官方不提供 stubs）。为了不额外装 types-PyMySQL，
+# 只在"import pymysql 的那个模块"放过这条错误 —— 范围要窄，别整项目关掉。
+[[tool.mypy.overrides]]
+module = ["app.migrate"]
+disable_error_code = ["import-untyped"]
+
+# ---------------------------------------------------------------- 测试
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,47 @@
+# nginx 站点模板：test2.peilika.beer（A 预演站）
+#
+# 这是「整份替换」用的干净版本（换机 / 重建站点时用）。
+# 今晚线上是**原地插 include**（switch_nginx.sh --web staging），不整份替换 —— 少动就少风险。
+#
+# 安装：
+#   cp web-test2.conf.template /etc/nginx/sites-available/peilika-v2
+#   nginx -t && systemctl reload nginx
+#
+# 依赖（switch_nginx.sh 会装）：
+#   /etc/nginx/snippets/bakerai-new-api.conf    公共反代（/v1 /chat /upload /fetch …）
+#   /etc/nginx/snippets/bakerai-web-extra.conf  网页域专用（/group/；api 系 vhost 自带，不能混进公共片段）
+server {
+    listen 80;
+    server_name test2.peilika.beer;
+
+    root /var/www/peilika-v2;
+    index index.html;
+
+    # 数据包上限 64MB（与后端 import_max_bytes 对齐）；/upload /fetch 的 300s 超时在片段里
+    client_max_body_size 64m;
+
+    include /etc/nginx/snippets/bakerai-new-api.conf;
+    include /etc/nginx/snippets/bakerai-web-extra.conf;
+
+    # index.html 绝不缓存：文件名固定，缓存住就会长时间停在旧构建上
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header Pragma "no-cache" always;
+        expires -1;
+    }
+    location ~* \.html$ {
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    # 带内容哈希的静态资源可以长缓存
+    location /assets/ {
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable";
+        add_header Access-Control-Allow-Origin * always;
+    }
+
+    # SPA fallback（放最后：前缀匹配最短，别盖住上面的 location）
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
