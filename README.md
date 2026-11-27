@@ -7,6 +7,11 @@
 > 《明日方舟》《明日方舟：终末地》及其角色、美术、设定版权归原权利人所有。如有侵权请联系删除。
 > 代码以 [MIT](LICENSE) 协议开源。
 
+<p align="center">
+  <img src="docs/screenshots/01-characters.webp" width="49%" alt="角色列表">
+  <img src="docs/screenshots/02-chat.webp" width="49%" alt="单聊界面">
+</p>
+
 ---
 
 ## 仓库里有什么

@@ -10,7 +10,7 @@
 #   所以：**范围在 pyproject，具体版本在锁文件**；改依赖要同时改两处。
 #
 # 怎么更新（在服务器上装完先验证，再回来改这一份）：
-#   /home/y/baker-v4/venv/bin/pip freeze | sort > /tmp/freeze.txt
+#   ~/baker-v4/venv/bin/pip freeze | sort > /tmp/freeze.txt
 #   —— 去掉 `-e ...` 那行，把结果贴回这里
 #
 # 已知差异：本机 Python 是 3.14.5，服务器是 3.14.4（同一 minor，只差一个 patch）。

@@ -10,7 +10,7 @@ set -euo pipefail
 
 DB=baker_back_test3
 PROD_DB=baker_back
-BASE=/home/y/baker-v4-test3
+BASE="${BASE:-$HOME/baker-v4-test3}"
 
 echo "== 建库"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
@@ -23,7 +23,7 @@ echo "   原因：--no-create-info 只灌数据，表得先由迁移建出来"
 echo "== 前端 dist"
 mkdir -p /var/www/peilika-chat-test3
 rm -rf /var/www/peilika-chat-test3/*
-tar xzf /home/y/tmp/test3-dist.tgz -C /var/www/peilika-chat-test3
+tar xzf "$HOME/tmp/test3-dist.tgz" -C /var/www/peilika-chat-test3
 chown -R www-data:www-data /var/www/peilika-chat-test3
 echo "   $(ls /var/www/peilika-chat-test3 | tr '\n' ' ')"
 echo "   index 引用的 js: $(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' /var/www/peilika-chat-test3/index.html | head -1)"

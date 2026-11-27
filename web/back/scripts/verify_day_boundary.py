@@ -3,7 +3,7 @@
 只读：不发写请求（用依赖覆盖假装管理员），不往库里插任何一行。
 
 用法（在 ~/baker-v4/back 下，靠 .env 连生产库）：
-    /home/y/baker-v4/venv/bin/python scripts/verify_day_boundary.py
+    ~/baker-v4/venv/bin/python scripts/verify_day_boundary.py
 
 注意：它连的是**当前 .env 指向的库**（prod 目录 = 生产库）。只读，不写任何一行。
 """

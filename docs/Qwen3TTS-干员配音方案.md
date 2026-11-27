@@ -153,9 +153,9 @@ voices/
 |---|---|
 | 端口 | `5970`（正式）/ `5971`（测试）——现有端口段 5500/5601-5708/5810/5900-5930/8200 之外，不冲突 |
 | 进程 | `systemd --user`（跟 `perlica-*` 一样的托管方式） |
-| 代码目录 | `/run/media/y/游戏/baker/tts/`（与 backend 平级，**不放 / 上，那里只剩 26 G**） |
-| venv | `/run/media/y/游戏/baker/tts/venv`（独立，不碰后端 venv） |
-| 模型权重 | 放 `/run/media/y/游戏/baker/tts/models/`（253 G 空闲），Base + VoiceDesign 各 4.5 G |
+| 代码目录 | `/run/media/<user>/游戏/baker/tts/`（与 backend 平级，**不放 / 上，那里只剩 26 G**） |
+| venv | `/run/media/<user>/游戏/baker/tts/venv`（独立，不碰后端 venv） |
+| 模型权重 | 放 `/run/media/<user>/游戏/baker/tts/models/`（253 G 空闲），Base + VoiceDesign 各 4.5 G |
 | 显存 | fp16 各占约 4.5 G；GPU0 放 Base、GPU1 放 VoiceDesign（RAG 已占 1.4 G/0.7 G，仍有余量） |
 | 并发 | **单队列**（`max_batch=1` + 排队），1080Ti 上别开并发，只会互相拖慢 |
 
@@ -235,7 +235,7 @@ POST /voices/{char}/{emotion}    → 上传/重建锚定音（管理用，带 to
 | 克隆音"忽好忽坏" | 体验差 | 每个干员锚定音定 2 次采样挑稳的；`temperature` 从 0.9 往下调（0.7~0.8 更稳，但会略平） |
 | 官方语音版权 | 下架风险 | 一期只用 VoiceDesign 原创音色；官方音频仅内部试听 |
 | 单队列排队 | 群聊卡顿 | 按干员预算：群聊里只给"发言人"配音，旁白不配 |
-| `/` 只剩 26 G | 装不下 | 权重、venv、缓存全放 `/run/media/y/游戏/` |
+| `/` 只剩 26 G | 装不下 | 权重、venv、缓存全放 `/run/media/<user>/游戏/` |
 | 服务挂了拖累聊天 | 聊天不可用 | TTS 完全旁路：超时 3 s 直接静默降级为纯文本，**绝不阻塞聊天主链** |
 
 ---

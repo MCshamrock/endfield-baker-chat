@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # test3.peilika.beer —— 预演站（新前端 + 新后端，数据完全隔离）
 #
-# 这一步是「以 y 身份跑」的部分：代码、.env、目录、迁移、systemd 用户单元。
+# 这一步是「以普通用户身份跑」的部分：代码、.env、目录、迁移、systemd 用户单元。
 # 数据库建库与授权、nginx 站点在 setup_root.sh 里（需要 root）。
 set -euo pipefail
 
-BASE=/home/y/baker-v4-test3
+BASE="${BASE:-$HOME/baker-v4-test3}"
 DB=baker_back_test3
-PROD_ENV=/home/y/baker-v4/back/.env
-VENV=/home/y/baker-v4/venv
+PROD_ENV="${PROD_ENV:-$HOME/baker-v4/back/.env}"
+VENV="${VENV:-$HOME/baker-v4/venv}"
 
 # 从生产 .env 里取数据库口令与密钥（同一台机器，不落盘不外传）
 PW=$(grep -E '^BAKER_DATABASE_URL=' "$PROD_ENV" | sed -E 's#.*baker:([^@]+)@.*#\1#')
@@ -18,7 +18,7 @@ echo "== 目录"
 mkdir -p "$BASE/logs" "$BASE/_runtime/uploads" "$BASE/_runtime/tmp"
 rm -rf "$BASE/back"
 mkdir -p "$BASE/back"
-tar xzf /home/y/tmp/test3-back.tgz -C "$BASE/back"
+tar xzf "$HOME/tmp/test3-back.tgz" -C "$BASE/back"
 echo "   back: $(find "$BASE/back" -name '*.py' | wc -l) 个 py 文件"
 
 echo "== .env（端口 5661，库 $DB，密钥与生产同一把：api_keys 才解得开）"

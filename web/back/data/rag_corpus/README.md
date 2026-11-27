@@ -5,7 +5,7 @@
 ## 它是什么
 
 老网站（原始网站前后端）的 RAG 检索服务 `rag_service.py` 跑在构建机上，
-向量索引在 `/run/media/y/游戏/local-llm/rag/index-endfield-v2/`：
+向量索引在 `/run/media/<user>/游戏/local-llm/rag/index-endfield-v2/`：
 
 | 文件 | 内容 |
 |---|---|

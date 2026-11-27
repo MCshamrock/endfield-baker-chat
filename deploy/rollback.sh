@@ -274,4 +274,4 @@ if [ "$FAIL" -gt 0 ]; then
 fi
 printf '\n%s回滚完成，入口已回到 02:00 前的状态%s\n' "$C_GRN" "$C_RST"
 echo "  备份仍保留在：$B"
-echo "  新后端数据保留在：/home/y/baker-v4（没删，随时可再切）"
+echo "  新后端数据保留在：${HOME}/baker-v4（没删，随时可再切）"

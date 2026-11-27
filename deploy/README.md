@@ -54,12 +54,12 @@ $ python3 -V; ls /usr/bin/python3.14 /usr/local/lib/python3.14 2>/dev/null
 Python 3.14.4
 /usr/bin/python3.14
 /usr/local/lib/python3.14
-$ /home/y/baker-v4/venv/bin/python -V
+$ ~/baker-v4/venv/bin/python -V
 Python 3.14.4                     # readlink → /usr/bin/python3.14
 ```
 
 * **系统级就有 3.14**（不是只有 `other/venv`）：`/usr/bin/python3.14`，`python3` 也指向它；**没有 3.12/3.13**。
-* 影子服务 venv 已在 `/home/y/baker-v4/venv`（80 MB，3.14.4），依赖与 `requirements.lock` 基本对齐。
+* 影子服务 venv 已在 `~/baker-v4/venv`（80 MB，3.14.4），依赖与 `requirements.lock` 基本对齐。
 * ⚠️ **缺 2 个运行时包**：`cryptography`（key 加密）、`python-multipart`（上传）。`pip install -r requirements.lock` 会补上，**必须在 T-24h 做**。
 
 ### 1.2 MySQL —— 🟢 绿（已装，不用装）
@@ -82,7 +82,7 @@ GRANT ALL PRIVILEGES ON `baker_back_test`.* TO `baker`@`localhost`
 | 版本 | **8.4.13**（apt，Ubuntu 26.04 官方源） |
 | 监听 | `127.0.0.1:3306`（**不对公网**，正确） |
 | root | `auth_socket` → `sudo mysql` 免密；**不要再改成密码登录** |
-| 应用账号 | `baker@localhost`（密码 32 位，在 `/home/y/baker-v4/.db_password`，600） |
+| 应用账号 | `baker@localhost`（密码 32 位，在 `~/baker-v4/.db_password`，600） |
 | 库 | `baker_back`、`baker_back_test` 都在，各 **0.6 MB / 14 表**，utf8mb4_0900_ai_ci |
 | 参数 | `max_connections=151`、`innodb_buffer_pool=128M`、`sql_mode` 含 STRICT —— 够用（真实负载 2.4 次/分钟） |
 | 磁盘 | datadir `/var/lib/mysql`（205 MB） |
@@ -93,7 +93,7 @@ GRANT ALL PRIVILEGES ON `baker_back_test`.* TO `baker`@`localhost`
 
 ```
 /dev/sda2  116G  86G  25G  78%  /            ← 余 25 G
-/dev/sdb3  469G 211G 253G  46%  /run/media/y/游戏   ← 余 253 G
+/dev/sdb3  469G 211G 253G  46%  /run/media/<user>/游戏   ← 余 253 G
 内存 55 G（可用 29.5 G）｜swap 4 G（已用 1.9 G）｜40 线程，load 5.3
 ```
 
@@ -101,7 +101,7 @@ GRANT ALL PRIVILEGES ON `baker_back_test`.* TO `baker`@`localhost`
 
 | 用途 | 需要 | 说明 |
 |---|---|---|
-| 新后端代码 + venv | ~90 MB | `/home/y/baker-v4` |
+| 新后端代码 + venv | ~90 MB | `~/baker-v4` |
 | MySQL 增量（36 角色 + 147 世界书 + 47 key + 用户消息） | < 100 MB | 现有库才 0.6 MB，种子后预计 3–5 MB，之后按消息增长 |
 | 上传/取件码 | **上限 2 GB**（`BAKER_UPLOAD_TOTAL_BYTES`），TTL 24h | 老客户端 60 MB/包；到顶会回 507，跑 `scripts/cleanup_uploads.py` |
 | 备份（本次） | ~60–80 MB | `/opt/bakerai-backup` 在 `/` 上 → 25 G 余量足够 |
@@ -173,7 +173,7 @@ cloudflared-ssh.service  SSH 隧道 ssh-tunnel → config-ssh.yml（ssh.peilika.
 
 | 资产 | 路径 | 实测 |
 |---|---|---|
-| **api_pool.json** | `/run/media/y/游戏/baker/backend/api_pool.json` | **47 个 key，其中 25 个 enabled**；`defaults={base_url,model,rpm,window_s,max_concurrency,cooldown_fail_base,fail_limit}`；600 |
+| **api_pool.json** | `/run/media/<user>/游戏/baker/backend/api_pool.json` | **47 个 key，其中 25 个 enabled**；`defaults={base_url,model,rpm,window_s,max_concurrency,cooldown_fail_base,fail_limit}`；600 |
 | 角色卡 v1 | `…/backend/characters/` | **38 个文件**（36 张卡 + index.json），688 KB |
 | 角色卡 v2（长卡） | `…/backend/characters_v2/` | **38 个文件**，916 KB ⇒ 新后端 `import_prompts_v2.py --source` 直接指这里 |
 | 世界观 | `…/backend/worldview.txt` | 3,032 B（已进 `schema/004_seed_worldview.sql`，不用再导） |
@@ -199,8 +199,8 @@ ss -lntH | grep -E ':(5660|3306)' → 127.0.0.1:5660 / 127.0.0.1:3306
 
 | 项 | 状态 |
 |---|---|
-| 最终版 `.env` | ✅ 已写（`BAKER_SECRET` 48 hex **已固定**，`UPLOAD_DIR` 指 `/home/y/baker-v4/_runtime/uploads`，600）—— **之后不许再改** |
-| 代码 | ✅ `/home/y/baker-v4/back`（来自 `/tmp/bakerai-stage.tgz`，sha256 `0c2af94e…`） |
+| 最终版 `.env` | ✅ 已写（`BAKER_SECRET` 48 hex **已固定**，`UPLOAD_DIR` 指 `~/baker-v4/_runtime/uploads`，600）—— **之后不许再改** |
+| 代码 | ✅ `~/baker-v4/back`（来自 `/tmp/bakerai-stage.tgz`，sha256 `0c2af94e…`） |
 | 依赖 | ✅ 运行时 26 包（从 lock 过滤掉 mypy/ruff/pytest），走了 `/tmp/bakerai-wheels` 离线装，**9 秒** |
 | 库 | ✅ `migrations=019_prompt_variant`（19 个）、`keys 47/25`、`characters 36`、`prompts v1 36 + v2 36`、`worldbook 147`、21 表 |
 | 临时实例验收 | ✅ 在 **5661** 起临时进程跑 `smoke`：**12 PASS / 0 FAIL / 1 SKIP**（未跑 `--generate`，按计划留到 02:00） |
@@ -308,7 +308,7 @@ sudo mysql -N -e "select version(); show databases; show grants for 'baker'@'loc
 ```
 **预期**：`8.4.13...`、`baker_back`、`baker_back_test`、两条 GRANT。
 **失败怎么办**：`baker_back` 不在 → `sudo mysql -e "CREATE DATABASE baker_back CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"`；
-`baker` 账号不在 → 跑 `install_mysql.sh`（会补建账号，密码写 `/home/y/baker-v4/.db_password`）。
+`baker` 账号不在 → 跑 `install_mysql.sh`（会补建账号，密码写 `~/baker-v4/.db_password`）。
 
 #### ③ 全新库 6 步（lead 2026-11-18 本地实测两遍，**顺序不能变**）
 
@@ -329,7 +329,7 @@ sudo mysql -e "CREATE DATABASE IF NOT EXISTS baker_back CHARACTER SET utf8mb4 CO
 #    实测：执行了 19 个迁移 … 最后一条 019_prompt_variant
 
 # 4) 导 key（用老的 api_pool.json，47 个）
-.venv/bin/python scripts/import_keys.py --file /run/media/y/游戏/baker/backend/api_pool.json
+.venv/bin/python scripts/import_keys.py --file /run/media/<user>/游戏/baker/backend/api_pool.json
 #    实测：47 个 key（25 启用 / 22 禁用；agnes-ai.cn 7 个、apihub 40 个），AES-256-GCM
 
 # 5) 世界书（**不跑这步 worldbook 表是 0 条**）
@@ -337,7 +337,7 @@ sudo mysql -e "CREATE DATABASE IF NOT EXISTS baker_back CHARACTER SET utf8mb4 CO
 #    实测：解析 147 条 / 新建 147
 
 # 6) v2 长卡（可选，但老客户端 use_new_prompt 会用到）
-.venv/bin/python scripts/import_prompts_v2.py --source /run/media/y/游戏/baker/backend/characters_v2
+.venv/bin/python scripts/import_prompts_v2.py --source /run/media/<user>/游戏/baker/backend/characters_v2
 #    实测：36 条 v2（v1 211,615 字 / v2 299,366 字）
 ```
 
@@ -355,8 +355,8 @@ sudo mysql -e "CREATE DATABASE IF NOT EXISTS baker_back CHARACTER SET utf8mb4 CO
 
 > 三条配套规矩：
 > 1. `import_keys.py` 读的是 `.env` 的 `BAKER_SECRET` ⇒ **.env 必须先落地**（部署脚本已把这一步排在第 2 位，不是按字母序）；
-> 2. 上传目录必须用 `BAKER_UPLOAD_DIR` 指到持久盘（默认会算到 `/home/y/_runtime`，那是项目外；本包生成 `.env` 时已设成 `/home/y/baker-v4/_runtime/uploads`），取件包 24h 自动清，磁盘至少留 5 G；
-> 3. 起服务只用 venv 里的解释器（`/home/y/baker-v4/venv/bin/uvicorn`），`--host 127.0.0.1 --port 5660`，**别 0.0.0.0**（前面有 nginx）。
+> 2. 上传目录必须用 `BAKER_UPLOAD_DIR` 指到持久盘（默认会算到 `~/_runtime`，那是项目外；本包生成 `.env` 时已设成 `~/baker-v4/_runtime/uploads`），取件包 24h 自动清，磁盘至少留 5 G；
+> 3. 起服务只用 venv 里的解释器（`~/baker-v4/venv/bin/uvicorn`），`--host 127.0.0.1 --port 5660`，**别 0.0.0.0**（前面有 nginx）。
 
 #### ③ 传代码 + 装依赖（15–20 分钟）
 
@@ -392,7 +392,7 @@ bash /tmp/deploy/deploy_backend.sh --src /tmp/bakerai-stage/back --dry-run
 > 用了 **5 分 58 秒**（13.5 kB/s）。别在 02:00 才开始装。T-24h 先下到本地目录，再离线装：
 > ```bash
 > mkdir -p /tmp/bakerai-wheels
-> /home/y/baker-v4/venv/bin/pip download -d /tmp/bakerai-wheels >     cryptography==50.0.2 python-multipart==0.0.33
+> ~/baker-v4/venv/bin/pip download -d /tmp/bakerai-wheels >     cryptography==50.0.2 python-multipart==0.0.33
 > # 之后 deploy_backend.sh 的 pip install 会优先用本地 wheel（其余包已经装好了，不会再去下）
 > ```
 
@@ -436,7 +436,7 @@ bash /tmp/deploy/deploy_backend.sh --start
 | `迁移没跑到 019` | 看 migrate 输出第一行报错；最常见是 `baker` 只有 baker_back 的权限（库名写错） |
 | `key 数量不对（0 ≠ 47）` | `BAKER_SECRET` 没写进 .env（脚本会提示）；或 `api_pool.json` 路径变了 |
 | `worldbook: 0 条` | 种子文件没传上去（`/tmp/deploy/seed/worldbook_endfield.sql`） |
-| `v2 提示词少于 36` | `--characters-v2` 路径不对（默认 `/run/media/y/游戏/baker/backend/characters_v2`） |
+| `v2 提示词少于 36` | `--characters-v2` 路径不对（默认 `/run/media/<user>/游戏/baker/backend/characters_v2`） |
 
 #### ④ 预演 nginx 切换（5 分钟，只打印 diff）
 
@@ -485,7 +485,7 @@ curl -sS http://127.0.0.1:5500/health
 **预期**：`5660 已释放`；老 gateway 回 `{"status":"ok","service":"gateway_service",...}`。
 **失败怎么办**：
 * `5660` 还被占 → `ss -lntp | grep 5660` 找 pid；不是 baker-v4 就 `ps -o args= -p <pid>` 看清楚再动（**不要盲杀**）；
-* 老 gateway 挂了 → **立刻中止上线**，先 `bash /run/media/y/游戏/baker/tools/start_all.sh` 把老服务救回来（这时还没有任何切换，用户无感）。
+* 老 gateway 挂了 → **立刻中止上线**，先 `bash /run/media/<user>/游戏/baker/tools/start_all.sh` 把老服务救回来（这时还没有任何切换，用户无感）。
 
 > 说明：本方案是**蓝绿切换**，用户可见中断只有 T+15 的 `nginx reload`（毫秒级）。
 > 如果你要的是"停 5 分钟做维护页"，那是另一套（需要维护页 + 停 5500），本次**不建议**——
@@ -913,7 +913,7 @@ bash /tmp/deploy/rollback.sh --yes --stop-new
 ```markdown
 ### 2026-11-18 02:00 新后端 + 新 web 上线
 - 备份：/opt/bakerai-backup/<ts>_predeploy（sha256 见 MANIFEST）
-- 后端：/home/y/baker-v4/back（代码 <commit/时间>），迁移 019，keys 47/25，worldbook 147，v2 36
+- 后端：~/baker-v4/back（代码 <commit/时间>），迁移 019，keys 47/25，worldbook 147，v2 36
 - 单元：baker-api.service（用户单元，127.0.0.1:5660，Restart=always）；baker-v4 disable
 - nginx：api/api2 upstream→5660；chat/test2 插 include（同源 /v1 …）
 - web：/var/www/peilika-v2（先）→ /var/www/peilika-chat（后），dist sha256 <...>

@@ -20,7 +20,7 @@
 # 参数：
 #   --staged DIR           解包好的新树（含 app/ schema/ scripts/ requirements.lock …）
 #   --local-manifest FILE  本地生成的清单（<sha>  <path>）
-#   --dest DIR             目标（默认 /home/y/baker-v4/back）
+#   --dest DIR             目标（默认 ~/baker-v4/back）
 #   --manifest-dir DIR     清单落盘目录（默认 /opt/bakerai-backup/manifests）
 #   --skip-restart         不重启、不复验（只做同步+对账）
 #   --dry-run              只打印
@@ -37,7 +37,7 @@ ONLY_ARGS=(--only app --only schema --only scripts --only requirements.lock --on
 
 STAGED=""
 LOCAL_MANIFEST=""
-DEST=/home/y/baker-v4/back
+DEST="${DEST:-$HOME/baker-v4/back}"
 MANIFEST_DIR=/opt/bakerai-backup/manifests
 SKIP_RESTART=0
 

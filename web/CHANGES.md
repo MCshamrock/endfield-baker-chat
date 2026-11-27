@@ -76,9 +76,9 @@
 - **老网关没停**：5950 / 5921 / 5922 照旧跑着（回滚用），观察一天再停。
 
 回滚三步：
-1. nginx：`sudo cp /home/y/baker-v4/backups/rag-peilika.20261122_172402 /etc/nginx/sites-available/rag-peilika && sudo systemctl reload nginx`
-2. 语料：`MYSQL_PWD=… mysql … baker_back < /home/y/baker-v4/backups/worldbook_20261122_172310.sql`
-3. 代码：`cp -a /home/y/baker-v4/back/app.bak_20261122_172310 /home/y/baker-v4/back/app && systemctl --user restart baker-api`
+1. nginx：`sudo cp ~/baker-v4/backups/rag-peilika.20261122_172402 /etc/nginx/sites-available/rag-peilika && sudo systemctl reload nginx`
+2. 语料：`MYSQL_PWD=… mysql … baker_back < ~/baker-v4/backups/worldbook_20261122_172310.sql`
+3. 代码：`cp -a ~/baker-v4/back/app.bak_20261122_172310 ~/baker-v4/back/app && systemctl --user restart baker-api`
 
 ---
 ## 2026-11-22 15:55 · 世界书语料换成老后端的 RAG 库（不再手写 147 条）
@@ -665,11 +665,11 @@ sudo bash -c 'rm -rf /var/www/peilika-chat.bad \
 ```bash
 # 1) 单元/接口（服务器上跑，MySQL 8.4）
 cd ~/baker-v4-test3/back
-/home/y/baker-v4/venv/bin/python -m pytest tests/test_admin_day_boundary.py tests/test_admin.py -q
+~/baker-v4/venv/bin/python -m pytest tests/test_admin_day_boundary.py tests/test_admin.py -q
 # → 4 passed + 21 passed
 
 # 2) 生产库实测（只读，脚本用依赖覆盖假装管理员，不写一行）
-cd ~/baker-v4/back && /home/y/baker-v4/venv/bin/python scripts/verify_day_boundary.py
+cd ~/baker-v4/back && ~/baker-v4/venv/bin/python scripts/verify_day_boundary.py
 # 东八区今天零点 = UTC 2026-11-19 16:00:00
 # today.requests  接口=192  SQL 手算=192        ← 一致
 # 对照 · 同一批行按 UTC 切天，'今天'会算成 1630 条（多吞 1438 条本该属于昨天的）
@@ -921,7 +921,7 @@ bash deploy/test3/setup_run.sh        # 迁移建表、装 systemd 用户单元 
 sudo bash deploy/test3/copy_data.sh   # 迁移之后拷那 3 张基础表（--replace，盖掉种子数据）
 ```
 
-服务器上的副本在 `/home/y/tmp/`（上传前要先 scp 上去，脚本里写的是 `~/tmp/xxx.tgz`）。
+服务器上的副本在 `~/tmp/`（上传前要先 scp 上去，脚本里写的是 `~/tmp/xxx.tgz`）。
 
 nginx 站点是 `/etc/nginx/sites-available/test3-peilika`，**故意不 include**
 `bakerai-new-api.conf`（那份写死 5660 = 生产），反代直接写在站点里打 5661。

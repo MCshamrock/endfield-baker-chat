@@ -13,9 +13,9 @@
 # 参数：
 #   --db NAME            要建的库（默认 baker_back；会同时建 <NAME>_test）
 #   --user NAME          应用账号（默认 baker）
-#   --password-file PATH 密码来源文件（默认 /home/y/baker-v4/.db_password）
-#                        文件不存在就生成一个 32 位随机密码并写进去（600，属主 y）
-#   --app-dir DIR        新后端的目录（默认 /home/y/baker-v4），用来决定密码文件放哪、
+#   --password-file PATH 密码来源文件（默认 ~/baker-v4/.db_password）
+#                        文件不存在就生成一个 32 位随机密码并写进去（600，属主当前用户）
+#   --app-dir DIR        新后端的目录（默认 ~/baker-v4），用来决定密码文件放哪、
 #                        以及顺手把 BAKER_DATABASE_URL 写进 .env（只在 .env 不存在时）
 #   --dry-run            只打印将执行的命令
 #
@@ -28,7 +28,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 DB_NAME=baker_back
 DB_USER=baker
-APP_DIR=/home/y/baker-v4
+APP_DIR="${APP_DIR:-$HOME/baker-v4}"
 PASSWORD_FILE=""
 
 while [ $# -gt 0 ]; do

@@ -4,7 +4,7 @@
 # 设计原则：**每一步都可重复跑**（rsync 覆盖、迁移按版本记、导入按唯一键覆盖），
 # 任何一步失败都停下来并打印"下一步该看什么"，不会带着半套状态继续往下走。
 #
-# 谁跑它：用户 `y`（**不要 root**）。理由：代码/venv/日志都在 /home/y/baker-v4 下，
+# 谁跑它：跑服务的普通用户（**不要 root**）。理由：代码/venv/日志都在部署根下，
 # 用 root 跑会造出一堆 root 属主的文件，之后 systemd 用户单元读写会踩权限。
 # 只有两处可选 root：写 /etc/logrotate.d（sudo -n 拿不到就只警告）。
 #
@@ -17,11 +17,11 @@
 #
 # 参数：
 #   --src DIR            源码目录（必须含 app/main.py + requirements.lock + schema/）
-#   --app DIR            部署根（默认 /home/y/baker-v4）
+#   --app DIR            部署根（默认 ~/baker-v4）
 #   --db-url URL         覆盖数据库连接串（默认用 <app>/.db_password 拼）
-#   --keys FILE          api_pool.json 路径（默认 /run/media/y/游戏/baker/backend/api_pool.json）
+#   --keys FILE          api_pool.json 路径（默认 /run/media/<user>/游戏/baker/backend/api_pool.json）
 #   --worldbook-sql FILE 世界书 SQL 种子（默认 <本脚本>/seed/worldbook_endfield.sql）
-#   --characters-v2 DIR  v2 长卡目录（默认 /run/media/y/游戏/baker/backend/characters_v2）
+#   --characters-v2 DIR  v2 长卡目录（默认 /run/media/<user>/游戏/baker/backend/characters_v2）
 #   --expected-keys N    期望 key 总数（默认 47）
 #   --expected-worldbook N 期望世界书条数（默认 147）
 #   --skip-deps          不装依赖（只换代码）
@@ -37,11 +37,11 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib/common.sh"
 
 SRC=""
-APP_DIR=/home/y/baker-v4
+APP_DIR="${APP_DIR:-$HOME/baker-v4}"
 DB_URL=""
-KEYS_FILE="/run/media/y/游戏/baker/backend/api_pool.json"
+KEYS_FILE="${KEYS_FILE:-/run/media/$USER/游戏/baker/backend/api_pool.json}"
 WORLDBOOK_SQL="$HERE/seed/worldbook_endfield.sql"
-CHARS_V2="/run/media/y/游戏/baker/backend/characters_v2"
+CHARS_V2="${CHARS_V2:-/run/media/$USER/游戏/baker/backend/characters_v2}"
 EXPECT_KEYS=47
 EXPECT_WORLDBOOK=147
 SKIP_DEPS=0
@@ -192,7 +192,7 @@ BAKER_UPSTREAM_TEMPERATURE=0.8
 # key 加密密钥：换了它，库里已存的 key 全部解不开
 BAKER_SECRET=$SECRET
 
-# 上传/临时文件必须留在项目内（默认会算到 /home/y/_runtime，那是项目外）
+# 上传/临时文件必须留在项目内（默认会算到 ~/_runtime，那是项目外）
 BAKER_UPLOAD_DIR=$APP_DIR/_runtime/uploads
 BAKER_TMP_DIR=$APP_DIR/_runtime/tmp
 
@@ -323,7 +323,7 @@ fi   # ← --start 时跳过的边界（1-7 铺路，8-9 点火）
 step "8. systemd 用户单元（baker-api.service）"
 mkdir -p "$UNIT_DIR"
 if [ "$DRY_RUN" = "0" ]; then
-    sed "s#/home/y/baker-v4#$APP_DIR#g" "$HERE/systemd/baker-api.service" >"$UNIT_DIR/$UNIT_NAME"
+    sed "s#%h/baker-v4#$APP_DIR#g" "$HERE/systemd/baker-api.service" >"$UNIT_DIR/$UNIT_NAME"
     ok "写入 $UNIT_DIR/$UNIT_NAME"
     # 老的影子单元占着同一个 5660：必须先停，否则新单元起不来（Address already in use）
     if systemctl --user is-enabled "$OLD_UNIT" >/dev/null 2>&1 || systemctl --user is-active "$OLD_UNIT" >/dev/null 2>&1; then

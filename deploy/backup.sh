@@ -2,10 +2,10 @@
 # backup.sh —— 上线前的"后悔药"：把这次会动到的东西全部打包到 /opt/bakerai-backup/<时间戳>/
 #
 # 覆盖范围（每一项都对应回滚时真的会用到的动作）：
-#   1. 老后端代码        /run/media/y/游戏/baker/backend        → 回滚后老服务照原样跑
-#   2. 新后端影子代码    /home/y/baker-v4/back                  → 部署失败时退回上一版新代码
+#   1. 老后端代码        /run/media/<user>/游戏/baker/backend   → 回滚后老服务照原样跑
+#   2. 新后端影子代码    ~/baker-v4/back                       → 部署失败时退回上一版新代码
 #   3. nginx 全配置      /etc/nginx                             → rollback.sh 直接还原
-#   4. api_pool.json     /run/media/y/游戏/baker/backend/        → 47 把 key 的唯一副本（600）
+#   4. api_pool.json     /run/media/<user>/游戏/baker/backend/  → key 池的唯一副本（600）
 #   5. 群聊 SQLite       run/group_sessions.db(+wal/shm)         → 老群聊会话（WAL 里有未落盘数据）
 #   6. 两块 web dist     /var/www/peilika-chat, /var/www/peilika-v2 → 覆盖前的老前端
 #   7. MySQL 全库        baker_back / baker_back_test            → 迁移改坏了能整个倒回去
@@ -30,8 +30,8 @@ DEST_ROOT=/opt/bakerai-backup
 TAG=deploy
 DO_DB=1
 
-OLD_BACKEND="/run/media/y/游戏/baker/backend"
-NEW_BACKEND="/home/y/baker-v4/back"
+OLD_BACKEND="${OLD_BACKEND:-/run/media/$USER/游戏/baker/backend}"
+NEW_BACKEND="${NEW_BACKEND:-$HOME/baker-v4/back}"
 WEB_PROD="/var/www/peilika-chat"     # chat.peilika.beer（正式）
 WEB_STAGE="/var/www/peilika-v2"      # test2.peilika.beer（预演）
 
@@ -128,7 +128,7 @@ pack old-backend-code "$OLD_BACKEND" \
     --exclude='logs' --exclude='__pycache__' --exclude='*.pyc' \
     --exclude='*.bak_*' --exclude='api_pool.json.bak*' --exclude='*.log'
 
-step "3. 新后端影子代码（/home/y/baker-v4/back，含 .env）"
+step "3. 新后端影子代码（$NEW_BACKEND，含 .env）"
 pack new-backend-code "$NEW_BACKEND" \
     --exclude='__pycache__' --exclude='*.pyc' --exclude='.pytest_cache' \
     --exclude='.mypy_cache' --exclude='.ruff_cache' --exclude='_runtime'
